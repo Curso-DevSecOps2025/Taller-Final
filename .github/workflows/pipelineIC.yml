@@ -1,2 +1,16 @@
 name: workflow
+on:
+    push:
+        branches:
+          - feat-sast
+jobs:
+  sast:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hola Mundo
+        run: |
+            echo "Hola Mundo desde el pipeline de SAST"
+            echo "Hola es un Ejemplo de pipeline de SAST"
 
+
+    
