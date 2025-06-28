@@ -20,12 +20,12 @@ jobs:
                 chmod 777 gradlew
                 ./gradlew build
         
-        -name: Validando existencia del proyecto en Sonarqube
-            run: |
-                curl -f -X POST -u '${{ secrets.TOKEN_SONAR_TALLERFINAL }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=curso-devsecops2025' -d 'visibility=public'
-                if [ $? -ne 0 ]; then
-                    echo "El proyecto ya existe en SonarQube"
-                else
-                    echo "Proyecto creado exitosamente"
-                    curl -f -X POST -u '${{ secrets.TOKEN_SONAR_TALLERFINAL }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=feat-sast' -d 'project=${{ github.event.repository.name }}' -d 'organization=curso-devsecops2025' -d 'visibility=public'
-                fi
+#        -name: Validando existencia del proyecto en Sonarqube
+#            run: |
+#               curl -f -X POST -u '${{ secrets.TOKEN_SONAR_TALLERFINAL }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=${{ github.event.repository.name }}' -d 'project=${{ github.event.repository.name }}' -d 'organization=curso-devsecops2025' -d 'visibility=public'
+#                if [ $? -ne 0 ]; then
+#                    echo "El proyecto ya existe en SonarQube"
+#                else
+#                    echo "Proyecto creado exitosamente"
+#                    curl -f -X POST -u '${{ secrets.TOKEN_SONAR_TALLERFINAL }}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=feat-sast' -d 'project=${{ github.event.repository.name }}' -d 'organization=curso-devsecops2025' -d 'visibility=public'
+#                fi
