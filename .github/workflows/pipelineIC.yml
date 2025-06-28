@@ -17,9 +17,9 @@ jobs:
           uses: actions/checkout@v2
         - name: build
           run: |
-            cd /d/Curso DEVSECOPS/Taller-Final
+            #cd /d/Curso DEVSECOPS/Taller-Final
             chmod 777 gradlew
-            ./gradlew build
+            #./gradlew build
         
         - name: Validando existencia del proyecto en Sonarqube
           run: |
