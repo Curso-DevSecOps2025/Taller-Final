@@ -16,7 +16,7 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v2
         - name: build
-          working-directory: ./d:/'Curso DEVSECOPS'/Taller-Final
+            ##working-directory: ./d:/'Curso DEVSECOPS'/Taller-Final
           run: |
             chmod 777 gradlew
             ./gradlew build
