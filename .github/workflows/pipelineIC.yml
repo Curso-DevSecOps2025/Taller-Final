@@ -16,9 +16,10 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v2
         - name: build
+            working-directory: ./Taller-Final
           run: |
             chmod 777 gradlew
-            #./gradlew build
+            ./gradlew build
         
         - name: Validando existencia del proyecto en Sonarqube
           run: |
