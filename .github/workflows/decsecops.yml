@@ -48,7 +48,7 @@ jobs:
         echo "Checking SonarCloud Quality Gate..."
         # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
         curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" \
+          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final" \
           | jq -e '.projectStatus.status == "OK"'
 
     # 4. SCA - Dependency Check
