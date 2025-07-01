@@ -29,11 +29,7 @@ jobs:
         id: validacionProjectSonar
         run: |
           set +e
-          curl -f -X POST -u '${{ secrets.TOKEN_SONAR_TALLERFINAL }}:' 'https://sonarcloud.io/api/projects/create' \
-            -d 'name=Taller-Final' \
-            -d 'project=Taller-Final' \
-            -d 'organization=curso-devsecops2025' \
-            -d 'visibility=public'
+          curl -f -X POST -u '${{ secrets.TOKEN_SONAR_TALLERFINAL }}:' 'https://sonarcloud.io/api/projects/create' -d 'name=Taller-Final' -d 'project=Taller-Final' -d 'organization=curso-devsecops2025' -d 'visibility=public'
           if [ $? -ne 0 ]; then
             echo "El proyecto ya existe en SonarQube"
             echo "Projecto_Existe=1" >> $GITHUB_OUTPUT
