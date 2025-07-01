@@ -1,4 +1,4 @@
-name: Workflows
+name: workflows
 on:
     push:
         branches:
@@ -32,6 +32,6 @@ jobs:
                 else
                     echo "Proyecto ${github.event.repository.name} creado exitosamente en SonarCloud"
                     echo "Proyecto creado exitosamente"
-                    curl -f -X POST -u '${{secrets.TOKEN_SONAR_TALLERFINAL}}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=main' -d 'project=Taller-Final' -d 'visibility=public'
+                    curl -f -X POST -u '${{secrets.TOKEN_SONAR_TALLERFINAL}}:' 'https://sonarcloud.io/api/project_branches/rename' -d 'name=dev-branch' -d 'project=Taller-Final' -d 'visibility=public'
                 fi
             set -e
