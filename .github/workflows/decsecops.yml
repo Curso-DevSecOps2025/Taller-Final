@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    # 1. Clonación del repositorio
+    # 1. Clonacion del repositorio
     - name: Checkout code
       uses: actions/checkout@v4
       with:
@@ -36,8 +36,8 @@ jobs:
         SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
       with:
         args: >
-          -Dsonar.projectKey=Taller-Final
-          -Dsonar.organization=Curso DevSecOps2025
+          -Dsonar.projectKey=movies-app-devsecops
+          -Dsonar.organization=tu-organizacion
           -Dsonar.sources=.
           -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -48,7 +48,7 @@ jobs:
         echo "Checking SonarCloud Quality Gate..."
         # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
         curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final" \
+          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" \
           | jq -e '.projectStatus.status == "OK"'
 
     # 4. SCA - Dependency Check
@@ -83,7 +83,7 @@ jobs:
           fi
         fi
 
-    # 5. Construcción de Imagen Docker
+    # 5. Construccion de Imagen Docker
     - name: Build Docker Image
       run: |
         docker build -t movies-app:${{ github.sha }} .
