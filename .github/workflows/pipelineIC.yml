@@ -2,7 +2,7 @@ name: Workflows
 on:
     push:
         branches:
-          - feat-sast
+          - dev-branch
 jobs:
   SAST:
     runs-on: ubuntu-latest
@@ -16,7 +16,7 @@ jobs:
         - name: Checkout code
           uses: actions/checkout@v2
         - name: build
-          working-directory: ./Taller-Final
+          ##working-directory: ./Taller-Final
           run: |
             chmod 777 gradlew
             ./gradlew build
