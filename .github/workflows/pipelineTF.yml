@@ -1,7 +1,10 @@
 name: workflows
+
 on:
     push:
-        branches: [dev-br]
+        branches:
+            - dev-br
+
 jobs:
   SAST:
     runs-on: ubuntu-latest
