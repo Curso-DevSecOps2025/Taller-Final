@@ -11,15 +11,15 @@ jobs:
 runs-on: ubuntu-latest
 
 steps:
-	  # 1. Clonar repositorio
-- name: Checkout code
-uses: actions/checkout@v4
-with:
-  fetch-depth: 0
+	# 1. Clonar repositorio
+#- name: Checkout code
+#    uses: actions/checkout@v4
+#        with:
+#        fetch-depth: 0
 
       # 2. Configurar Node.js
 - name: Configurar Node.js
-uses: actions/setup-node@v4
+    uses: actions/setup-node@v4
 		with:
 		  node-version: '18'
 		  cache: 'npm'
