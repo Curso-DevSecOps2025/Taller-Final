@@ -73,20 +73,22 @@ steps:
   run: |
     echo "Checking SonarCloud Quality Gate..."
     # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
-curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" \
+curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: 
+    \ "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" \
     | jq -e '.projectStatus.status == "OK"'
+
 # 4. SCA - Chequear Dependency
 - name: Correr OWASP Dependency Check
 uses: dependency-check/Dependency-Check_Action@main
-	with:
-		project: 'movies-app'
-		path: '.'
-		format: 'JSON'
-		    args: >
-				--enableRetired
-				--enableExperimental
-				--failOnCVSS 4
-				--out reports
+with:
+	project: 'movies-app'
+	path: '.'
+	format: 'JSON'
+	args: >
+		--enableRetired
+		--enableExperimental
+		--failOnCVSS 4
+		--out reports
 
 	# Chequear Vulnerabilidad Dependencia 
 	- name: Chequea Vulnerabilidades de Dependencia
