@@ -1,4 +1,4 @@
-name: DevSecOps Pipeline
+name: Pipeline DevSecOps
 
 on:
   push:
@@ -9,145 +9,173 @@ on:
 jobs:
   security-pipeline:
     runs-on: ubuntu-latest
-    
+	
     steps:
-    # 1. Clonacion del repositorio
+	# 1. Clonar repositorio
     - name: Checkout code
-      uses: actions/checkout@v4
-      with:
+    uses: actions/checkout@v4
+    with:
         fetch-depth: 0
 
-    # 2. Setup Node.js
+	# 2. Configurar Node.js
     - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
+    uses: actions/setup-node@v4
+    with:
+		node-version: '18'
         cache: 'npm'
 
-    # Install dependencies
-    - name: Install dependencies
-      run: npm install
+	# Instalar dependencies
+    - name: Instalar dependencias
+    run: npm install
 
-    # 3. SAST - SonarCloud Analysis
-    - name: SonarCloud Scan
-      uses: SonarSource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
-      with:
-        args: >
-          -Dsonar.projectKey=curso-devsecops2025_Taller-Final
-          -Dsonar.organization=Curso DevSecOps2025
-          -Dsonar.sources=.
-          -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+	# 3. SAST - SonarCloud Analisis
+    - name: Scanner SonarQube
+		on:
+        push:
+            branches:
+                - dev-branch
+        workflow_dispatch:
 
-    # Check SonarCloud Quality Gate
-    - name: Check SonarCloud Quality Gate
-      run: |
-        echo "Checking SonarCloud Quality Gate..."
-        # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
-        curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" \
-          | jq -e '.projectStatus.status == "OK"'
+        jobs:
+            sonarqube:
+            runs-on: ubuntu-latest
 
-    # 4. SCA - Dependency Check
-    - name: Run OWASP Dependency Check
-      uses: dependency-check/Dependency-Check_Action@main
-      with:
-        project: 'movies-app'
-        path: '.'
-        format: 'JSON'
-        args: >
-          --enableRetired
-          --enableExperimental
-          --failOnCVSS 4
-          --out reports
+            steps:
+                - name: Checkout code
+                uses: actions/checkout@v4
+                with:
+                fetch-depth: 0  
 
-    # Check Dependency Vulnerabilities
-    - name: Check Dependency Vulnerabilities
-      run: |
-        if [ -f "reports/dependency-check-report.json" ]; then
-          # Check for Critical, High, or Medium vulnerabilities
-          CRITICAL=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "CRITICAL")] | length' reports/dependency-check-report.json)
-          HIGH=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "HIGH")] | length' reports/dependency-check-report.json)
-          MEDIUM=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "MEDIUM")] | length' reports/dependency-check-report.json)
-          
-          echo "Critical vulnerabilities: $CRITICAL"
-          echo "High vulnerabilities: $HIGH"
-          echo "Medium vulnerabilities: $MEDIUM"
-          
-          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
-            echo "❌ Pipeline failed: Found Critical, High, or Medium vulnerabilities in dependencies"
-            exit 1
-          fi
-        fi
+                - name: Set up JDK 17
+                uses: actions/setup-java@v2
+                with:
+						java-version: '17'
+                        distribution: 'adopt'
+                        
+                - name: Construir Proyecto
+                run: |
+                chmod +x ./gradlew
+                ./gradlew build
 
-    # 5. Construccion de Imagen Docker
-    - name: Build Docker Image
-      run: |
-        docker build -t movies-app:${{ github.sha }} .
-        docker tag movies-app:${{ github.sha }} movies-app:latest
+							
+				- name: Correr Scan SonarCloud
+                uses: SonarSource/sonarcloud-github-action@master
+                env:
+						GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
+                        SONAR_TOKEN: ${{ secrets.Token-Sonar-TalleFinal }}
+                    with:
+					args: |
+						-Dsonar.projectKey=curso-devsecops2025_Taller-Final
+						-Dsonar.organization="curso-devsecops2025"
+						-Dsonar.sources=.
+						-Dsonar.exclusions="node_modules/**,coverage/**,**/*.test.js"
+						-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+				
+		#3 Check SonarCloud Quality Gate
+			- name: Check SonarCloud Quality Gate
+			  run: |
+				echo "Checking SonarCloud Quality Gate..."
+				# This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
+				curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
+				  "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" | jq -e '.projectStatus.status == "OK"'
 
-    # 6. Image Security - Trivy Scan
-    - name: Run Trivy vulnerability scanner
-      uses: aquasecurity/trivy-action@master
-      with:
-        image-ref: 'movies-app:latest'
-        format: 'json'
-        output: 'trivy-results.json'
-        exit-code: '0'
+		# 4. SCA - Chequear Dependencia
+			- name: Correr OWASP Dependency Check
+				uses: dependency-check/Dependency-Check_Action@main
+				  with:
+					project: 'movies-app'
+					path: '.'
+					format: 'JSON'
+					args: >
+					  --enableRetired
+					  --enableExperimental
+					  --failOnCVSS 4
+					  --out reports
 
-    # Check Image Vulnerabilities
-    - name: Check Image Security
-      run: |
-        if [ -f "trivy-results.json" ]; then
-          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-results.json)
-          HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-results.json)
-          MEDIUM=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIUM")] | length' trivy-results.json)
-          
-          echo "Critical vulnerabilities: $CRITICAL"
-          echo "High vulnerabilities: $HIGH"
-          echo "Medium vulnerabilities: $MEDIUM"
-          
-          if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
-            echo "❌ Pipeline failed: Found Critical, High, or Medium vulnerabilities in Docker image"
-            exit 1
-          fi
-        fi
+			# Chequear Vulnerabilidad Dependencia 
+			- name: Chequea Vulnerabilidades de Dependencia
+				run: |
+						if [ -f "reports/dependency-check-report.json" ]; then
+							  # Chequeo de Criticidad de vulnerabilidades
+							  CRITICA=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "CRITICA")] | length' reports/dependency-check-report.json)
+							  ALTA=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "ALTA")] | length' reports/dependency-check-report.json)
+							  MEDIA=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "MEDIA")] | length' reports/dependency-check-report.json)
+							  
+							  echo "Vulnerabilidad Critica: $CRITICA"
+							  echo "Vulnerabilidad: $ALTA"
+							  echo "Vulnerabilidad Media: $MEDIA"
+							  
+							  if [ "$CRITICA" -gt 0 ] || [ "$ALTA" -gt 0 ] || [ "$MEDIA" -gt 0 ]; then
+								echo "Pipeline fallido: Vulnerabilidad Critica, Alta, o Media"
+								exit 1
+							  fi
+						fi
 
-    # 7. Despliegue de la aplicación (Docker local)
-    - name: Deploy Application
-      run: |
-        echo "Deploying application..."
-        docker run -d -p 3000:3000 --name movies-app movies-app:latest
-        sleep 10
-        # Verificar que la aplicación esté corriendo
-        curl -f http://localhost:3000 || exit 1
+			# 5. Construcción de Imagen Docker
+			- name: Construir Imagen Docker 
+			  run: |
+				docker build -t movies-app:${{ github.sha }} .
+				docker tag movies-app:${{ github.sha }} movies-app:latest
 
-    # 8. DAST - OWASP ZAP Analysis
-    - name: OWASP ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.10.0
-      with:
-        target: 'http://localhost:3000'
-        rules_file_name: '.zap/rules.tsv'
-        cmd_options: '-a'
+			# 6. Imagen Seguridad - Scan Trivy
+			- name: Correr Scanner Trivy
+			  uses: aquasecurity/trivy-action@master
+			  with:
+				image-ref: 'movies-app:latest'
+				format: 'json'
+				output: 'trivy-results.json'
+				exit-code: '0'
 
-    # Upload reports as artifacts
-    - name: Upload Security Reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: security-reports
-        path: |
-          reports/
-          trivy-results.json
-          report_html.html
-          report_json.json
+			# Chequear Imagen Vulnerabilidad
+			- name: Chequea Imagen Securidad
+			  run: |
+				if [ -f "trivy-results.json" ]; then
+				  CRITICA=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICA")] | length' trivy-results.json)
+				  ALTA=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "ALTA")] | length' trivy-results.json)
+				  MEDIA=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIA")] | length' trivy-results.json)
+				  
+				  echo "Vulnerabilidad Critica: $CRITICA"
+				  echo "Vulnerabilidad Alta: $ALTA"
+				  echo "vulnerabilidad Media: $MEDIA"
+				  
+				  if [ "$CRITICA" -gt 0 ] || [ "$ALTA" -gt 0 ] || [ "$MEDIA" -gt 0 ]; then
+					echo "Pipeline faillido: Errores Criticos, Altos, o Medios en la imagen de Docker"
+					exit 1
+				  fi
+				fi
 
-    # Cleanup
-    - name: Cleanup
-      if: always()
-      run: |
-        docker stop movies-app || true
-        docker rm movies-app || true
+			# 7. Despliegue de la aplicación (Docker local)
+			- name: Deployar aplicacion
+			  run: |
+				echo "Deployando aplicacion..."
+				docker run -d -p 3000:3000 --name movies-app movies-app:latest
+				sleep 10
+				# Verificar que la aplicación esté corriendo
+				curl -f http://localhost:3000 || exit 1
+
+			# 8. DAST - OWASP ZAP Analisis
+			- name: Scanner OWASP ZAP
+			  uses: zaproxy/action-baseline@v0.10.0
+			  with:
+				target: 'http://localhost:3000'
+				rules_file_name: '.zap/rules.tsv'
+				cmd_options: '-a'
+
+			# Carga reporte como artifact
+			- name: Cargar Reporte de Seguridad
+			  uses: actions/upload-artifact@v3
+				if: always()
+				  with:
+					name: security-reports
+					path: |
+					  reports/
+					  trivy-results.json
+					  report_html.html
+					  report_json.json
+
+			# Limpieza
+			- name: Cleanup
+				if: always()
+				  run: |
+					docker stop movies-app || true
+					docker rm movies-app || true
