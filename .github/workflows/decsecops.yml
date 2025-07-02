@@ -23,47 +23,45 @@ jobs:
     with:
 		node-version: '18'
         cache: 'npm'
-
-	# Instalar dependencies
+    
+        # Instalar dependencies
     - name: Instalar dependencias
     run: npm install
 
 	# 3. SAST - SonarCloud Analisis
     - name: Scanner SonarQube
-		on:
+	on:
         push:
             branches:
                 - dev-branch
-        workflow_dispatch:
+            workflow_dispatch:
 
         jobs:
             sonarqube:
-            runs-on: ubuntu-latest
-
-            steps:
-                - name: Checkout code
-                uses: actions/checkout@v4
-                with:
-                fetch-depth: 0  
-
-                - name: Set up JDK 17
-                uses: actions/setup-java@v2
-                with:
+                runs-on: ubuntu-latest
+                steps:
+                    - name: Checkout code
+                    uses: actions/checkout@v4
+                    with:
+                        fetch-depth: 0  
+    
+                    - name: Set up JDK 17
+                    uses: actions/setup-java@v2
+                    with:
 						java-version: '17'
                         distribution: 'adopt'
-                        
-                - name: Construir Proyecto
-                run: |
-                chmod +x ./gradlew
-                ./gradlew build
-
-							
+                    
+                    - name: Construir Proyecto
+                    run: |
+                    chmod +x ./gradlew
+                    ./gradlew build
+		
 				- name: Correr Scan SonarCloud
-                uses: SonarSource/sonarcloud-github-action@master
-                env:
+					uses: SonarSource/sonarcloud-github-action@master
+					env:
 						GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
-                        SONAR_TOKEN: ${{ secrets.Token-Sonar-TalleFinal }}
-                    with:
+						SONAR_TOKEN: ${{ secrets.Token-Sonar-TalleFinal }}
+					with:
 					args: |
 						-Dsonar.projectKey=curso-devsecops2025_Taller-Final
 						-Dsonar.organization="curso-devsecops2025"
@@ -71,13 +69,17 @@ jobs:
 						-Dsonar.exclusions="node_modules/**,coverage/**,**/*.test.js"
 						-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 				
-		#3 Check SonarCloud Quality Gate
+				
+
+
+			# Check SonarCloud Quality Gate
 			- name: Check SonarCloud Quality Gate
 			  run: |
 				echo "Checking SonarCloud Quality Gate..."
 				# This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
 				curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-				  "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" | jq -e '.projectStatus.status == "OK"'
+				  "https://sonarcloud.io/api/qualitygates/project_status?projectKey=movies-app-devsecops" \
+				  | jq -e '.projectStatus.status == "OK"'
 
 		# 4. SCA - Chequear Dependencia
 			- name: Correr OWASP Dependency Check
@@ -179,3 +181,44 @@ jobs:
 				  run: |
 					docker stop movies-app || true
 					docker rm movies-app || true
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+					
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+				- name: Correr Scan SonarQube
+					uses: SonarSource/sonarqube-scan-action@v1
+					with:
+						args: >
+							-Dsonar.projectKey=Taller-Final
+							-Dsonar.organization=curso-devsecops2025
+							-Dsonar.host.url=https://sonarcloud.io
+							-Dsonar.login=${{ secrets.TOKEN_SONAR_TALLERFINAL }}
