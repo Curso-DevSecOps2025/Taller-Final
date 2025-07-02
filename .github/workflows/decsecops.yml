@@ -6,9 +6,9 @@ on:
   pull_request:
     branches: [ main ]
 
-jobs:
-  security-pipeline:
-    runs-on: ubuntu-latest
+    jobs:
+        security-pipeline:
+            runs-on: ubuntu-latest
 	
     steps:
 	# 1. Clonar repositorio
@@ -24,7 +24,7 @@ jobs:
 		node-version: '18'
         cache: 'npm'
     
-        # Instalar dependencies
+    # Instalar dependencias
     - name: Instalar dependencias
     run: npm install
 
@@ -63,11 +63,11 @@ jobs:
 						SONAR_TOKEN: ${{ secrets.Token-Sonar-TalleFinal }}
 					with:
 					args: |
-						-Dsonar.projectKey=curso-devsecops2025_Taller-Final
-						-Dsonar.organization="curso-devsecops2025"
-						-Dsonar.sources=.
-						-Dsonar.exclusions="node_modules/**,coverage/**,**/*.test.js"
-						-Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+                        -Dsonar.projectKey=curso-devsecops2025_Taller-Final
+                        -Dsonar.organization="curso-devsecops2025"
+                        -Dsonar.sources=.
+                        -Dsonar.exclusions="node_modules/**,coverage/**,**/*.test.js"
+                        -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
 				
 				
 
