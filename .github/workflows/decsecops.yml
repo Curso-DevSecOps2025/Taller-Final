@@ -28,6 +28,13 @@ jobs:
     - name: Instalar dependencias
       run: npm install
 
+    # 3.1 Create reports directory and base files
+    - name: Initialize reports directory
+      run: |
+        mkdir -p reports
+        echo "Security reports will be generated here" > reports/README.md
+        echo '{"scan_date": "'$(date)'", "status": "initialized"}' > reports/scan-status.json
+
     # 4. SAST SonarCloud Escaner
     - name: SonarCloud Escaner
       uses: SonarSource/sonarcloud-github-action@master
@@ -36,7 +43,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
       with:
         args: >
-          -Dsonar.projectKey=Taller-Final
+          -Dsonar.projectKey=curso-devsecops2025
           -Dsonar.organization=Curso-DevSecOps2025
           -Dsonar.sources=.
           -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
@@ -48,14 +55,14 @@ jobs:
         echo "Chequear SonarCloud Quality Gate..."
         # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
         curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final" \
+          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=curso-devsecops2025" \
           | jq -e '.projectStatus.status == "OK"'
 
     # 6. SCA - Dependency Check
     - name: Corre OWASP Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
       with:
-        project: 'Taller-Final'
+        project: 'curso-devsecops2025'
         path: '.'
         format: 'JSON'
         args: >
@@ -65,7 +72,7 @@ jobs:
           --out reports
 
     # 7. Chequear Vulnerabilidad Dependencia
-    - name: Chequear Vulnerabilidades de Dependencia
+    - name: Chequea Vulnerabilidades de Dependencia
       run: |
         if [ -f "reports/dependency-check-report.json" ]; then
           # Chequear Vulnerabilidades Critica, Alta, o Media
