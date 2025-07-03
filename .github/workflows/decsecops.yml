@@ -44,7 +44,7 @@ jobs:
       with:
         args: >
 
-          -Dsonar.projectKey=curso-devsecops2025_Taller-Final
+          -Dsonar.projectKey=curso-devsecops2025
           -Dsonar.organization=Curso-DevSecOps2025
           -Dsonar.sources=.
           -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
@@ -56,14 +56,14 @@ jobs:
         echo "Chequear SonarCloud Quality Gate..."
         # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
         curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=curso-devsecops2025_Taller-Final" \
+          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=curso-devsecops2025" \
           | jq -e '.projectStatus.status == "OK"'
 
     # 6. SCA - Dependency Check
     - name: Corre OWASP Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
       with:
-        project: 'curso-devsecops2025_Taller-Final'
+        project: 'curso-devsecops2025'
         path: '.'
         format: 'JSON'
         args: >
@@ -127,7 +127,7 @@ jobs:
     # 11. Despliegue de la aplicación (Docker local)
     - name: Deployar Aplicacion
       run: |
-        echo "Deploying application..."
+        echo "Deployando aplicacion..."
         docker run -d -p 3000:3000 --name movies-app movies-app:latest
         sleep 10
         # Verificar que la aplicación esté corriendo
