@@ -28,11 +28,11 @@ jobs:
     - name: Instalar dependencias
       run: npm install
 
-    # 3.1 Create reports directory and base files
-    - name: Initialize reports directory
+    # 3.1 Crear directorio reports y archivos base
+    - name: Inicializar directorio reports
       run: |
         mkdir -p reports
-        echo "Security reports will be generated here" > reports/README.md
+        echo "Los informes de seguridad se generarán aquí" > reports/README.md
         echo '{"scan_date": "'$(date)'", "status": "initialized"}' > reports/scan-status.json
 
     # 4. SAST SonarCloud Escaner
@@ -56,7 +56,7 @@ jobs:
         echo "Chequear SonarCloud Quality Gate..."
         # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
         curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final" \
+          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=curso-devsecops2025" \
           | jq -e '.projectStatus.status == "OK"'
 
     # 6. SCA - Dependency Check
