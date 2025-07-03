@@ -45,7 +45,7 @@ jobs:
         args: >
 
           -Dsonar.projectKey=curso-devsecops2025
-          -Dsonar.organization=Curso-DevSecOps2025
+          -Dsonar.organization=Curso DevSecOps2025
           -Dsonar.sources=.
           -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -54,7 +54,7 @@ jobs:
     - name: Chequear SonarCloud Quality Gate
       run: |
         echo "Chequear SonarCloud Quality Gate..."
-        # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
+        # Fallo del quality gate (Critica, Alta, Media)
         curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
           "https://sonarcloud.io/api/qualitygates/project_status?projectKey=curso-devsecops2025" \
           | jq -e '.projectStatus.status == "OK"'
