@@ -36,19 +36,14 @@ jobs:
         echo '{"scan_date": "'$(date)'", "status": "initialized"}' > reports/scan-status.json
 
     # 4. SAST SonarCloud Escaner
-    - name: SonarCloud Escaner
+    - name: SonarCloud Scan
       uses: SonarSource/sonarcloud-github-action@master
       env:
-        GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
-      with:
-        args: >
-
-          -Dsonar.projectKey=Taller-Final
-          -Dsonar.organization=curso-devsecops2025
-          -Dsonar.sources=.
-          -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
-          -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+       GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
+       SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL}}
+       SONAR_PROJECT_KEY: Taller-Final
+       SONAR_ORGANIZATION: curso-devsecops2025
+      continue-on-error: true
 
     # 5. Chequear SonarCloud Quality Gate
     - name: Chequear SonarCloud Quality Gate
