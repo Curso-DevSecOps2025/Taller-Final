@@ -36,7 +36,7 @@ jobs:
         echo '{"scan_date": "'$(date)'", "status": "initialized"}' > reports/scan-status.json
 
     # 4. SAST SonarCloud Escaner
-    - name: SonarCloud Scan
+    - name: Scaner SonarCloud
       uses: SonarSource/sonarcloud-github-action@master
       env:
        GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
