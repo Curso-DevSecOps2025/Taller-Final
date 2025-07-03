@@ -116,7 +116,7 @@ jobs:
           fi
         fi
 
-    # 11. Despliegue de la aplicación (Docker local)
+    # 11. Despliegue de la aplicación (Docker locals)
     - name: Deployar Aplicacion
       run: |
         echo "Deploying application..."
