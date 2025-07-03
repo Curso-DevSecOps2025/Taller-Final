@@ -36,8 +36,8 @@ jobs:
         SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
       with:
         args: >
-          -Dsonar.projectKey=curso-devsecops2025_Taller-Final
-          -Dsonar.organization=curso-devsecops2025
+          -Dsonar.projectKey=curso-devsecops2025
+          -Dsonar.organization=Curso-DevSecOps2025
           -Dsonar.sources=.
           -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
