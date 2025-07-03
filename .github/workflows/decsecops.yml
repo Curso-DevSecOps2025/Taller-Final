@@ -36,8 +36,8 @@ jobs:
         SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
       with:
         args: >
-          -Dsonar.projectKey=${{ env.SONAR_PROJECT_KEY }}
-          -Dsonar.organization=tu-organizacion
+          -Dsonar.projectKey=curso-devsecops2025_Taller-Final
+          -Dsonar.organization=curso-devsecops2025
           -Dsonar.sources=.
           -Dsonar.exclusions=node_modules/**,coverage/**,**/*.test.js
           -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
@@ -134,7 +134,7 @@ jobs:
         cmd_options: '-a'
 
     # 13. Carga reporte como artifacto
-    - name: Carga Reporte Securidad
+    - name: Carga Reporte Seguridad
       uses: actions/upload-artifact@v4
       if: always()
       with:
