@@ -43,6 +43,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
       with:
         args: >
+
           -Dsonar.projectKey=curso-devsecops2025
           -Dsonar.organization=Curso-DevSecOps2025
           -Dsonar.sources=.
@@ -55,7 +56,7 @@ jobs:
         echo "Chequear SonarCloud Quality Gate..."
         # This step will fail if quality gate fails (Critical, High, Medium vulnerabilities)
         curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=curso-devsecops2025" \
+          "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final" \
           | jq -e '.projectStatus.status == "OK"'
 
     # 6. SCA - Dependency Check
