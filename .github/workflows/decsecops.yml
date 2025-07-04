@@ -130,15 +130,15 @@ jobs:
      uses: actions/upload-artifact@v4
      if: always()
      with:
-       name: security-reports
-       path: |
-         reports/
-         trivy-results.json
-         report_html.html
-         report_json.json
+      name: security-reports
+      path: |
+        reports/
+        trivy-results.json
+        report_html.html
+        report_json.json
 
 # 14. Cleanups
    - name: Cleanups
      if: always()
      run: |
-     docker rm -f kuber-project 2>/dev/null || echo "Contenedor kuber-project no existe o ya fue eliminado"
+      docker rm -f kuber-project 2>/dev/null || echo "Contenedor kuber-project no existe o ya fue eliminado"
