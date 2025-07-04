@@ -49,8 +49,7 @@ jobs:
     - name: Chequear SonarCloud Quality Gate
       run: |
        echo "Chequear SonarCloud Quality Gate..."
-       RESPONSE=$(curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
-       "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final")
+       RESPONSE=$(curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}:"https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final")
        STATUS=$(echo $RESPONSE | jq -r '.projectStatus.status')
        echo "Estado Quality Gate: $STATUS"
        if [ "$STATUS" != "OK" ]; then
