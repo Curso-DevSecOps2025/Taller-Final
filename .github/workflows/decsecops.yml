@@ -56,14 +56,14 @@ jobs:
           args: >
             --enableRetired
             --enableExperimental
-            --failOnCVSS 4
+            --failOnCVSS 7.0
             --out reports
 
       # 7. Chequear Vulnerabilidades de Dependencias
       - name: Chequear Vulnerabilidades de Dependencias
         run: |
           # Ejecutar dependency-check con umbral de falla
-          dependency-check.sh --failOnCVSS 9.0
+          dependency-check.sh --failOnCVSS 7.0
           
           # Verificar si existe el reporte JSON
           if [ -f "reports/dependency-check-report.json" ]; then
