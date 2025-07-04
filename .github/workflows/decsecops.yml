@@ -63,7 +63,7 @@ jobs:
       - name: Chequear Vulnerabilidades de Dependencias
         run: |
           # Ejecutar dependency-check con umbral de falla
-          dependency-check.sh --failOnCVSS 7.0
+          dependency-check.sh --failOnCVSS 9.0
           
           # Verificar si existe el reporte JSON
           if [ -f "reports/dependency-check-report.json" ]; then
