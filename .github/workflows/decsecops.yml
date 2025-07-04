@@ -46,6 +46,15 @@ jobs:
           SONAR_ORGANIZATION: curso-devsecops2025
         #continue-on-error: true  # Excepción que continúa SonarCloud aunque falle
 
+      # 5. Chequear SonarCloud Quality Gate
+      - name: Chequear SonarCloud Quality Gate
+        run: |
+          echo "Chequear SonarCloud Quality Gate..."
+          # Fallo del quality gate (Critica, Alta, Media)
+          curl -u ${{ secrets.TOKEN_SONAR_TALLERFINAL }}: \
+           "https://sonarcloud.io/api/qualitygates/project_status?projectKey=Taller-Final" \
+            | jq -e '.projectStatus.status == "OK"'
+
       # 6. SCA - Dependency Check
       - name: Correr OWASP Dependency Check
         uses: dependency-check/Dependency-Check_Action@main
