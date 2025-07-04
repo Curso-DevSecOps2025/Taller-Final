@@ -63,16 +63,16 @@ jobs:
       run: |
        if [ -f "reports/dependency-check-report.json" ]; then
         # Chequear Vulnerabilidades Critica, Alta, o Media
-        CRITICA=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "CRITICA")] | length' reports/dependency-check-report.json)
-        ALTA=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "ALTA")] | length' reports/dependency-check-report.json)
-        MEDIA=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "MEDIA")] | length' reports/dependency-check-report.json)      
-        echo "Vulnerabilidad Critica: $CRITICA"
-        echo "Vulnerabilidad Alta: $ALTA"
-        echo "Vulnerabilidad Media: $MEDIA"
+        CRITICAL=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "CRITICA")] | length' reports/dependency-check-report.json)
+        HIGH=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "HIGH")] | length' reports/dependency-check-report.json)
+        MEDIUM=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "MEDIUM")] | length' reports/dependency-check-report.json)      
+        echo "Vulnerabilidad Critica: $CRITICAL"
+        echo "Vulnerabilidad Alta: $HIGH"
+        echo "Vulnerabilidad Media: $MEDIUM"
           
-        if [ "$CRITICA" -gt 0 ] || [ "$ALTA" -gt 0 ] || [ "$MEDIA" -gt 0 ]; then
+        if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
           echo " Pipeline fallido: Vulnerabilidad Critica, Alta, o Media "
-          exit 0
+          exit 1
         fi
        fi
 
@@ -95,15 +95,15 @@ jobs:
     - name: Chequear Imagen Seguridad
       run: |
         if [ -f "trivy-results.json" ]; then
-          CRITICA=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICA")] | length' trivy-results.json)
-          ALTA=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "ALTA")] | length' trivy-results.json)
-          MEDIA=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIA")] | length' trivy-results.json)
+          CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-results.json)
+          HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-results.json)
+          MEDIUM=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIUM")] | length' trivy-results.json)
           
-          echo "Vulnerabilidad Critica: $CRITICA"
-          echo "Vulnerabilidad Alta: $ALTA"
-          echo "Vulnerabilidad Media: $MEDIA"
+          echo "Vulnerabilidad Critica: $CRITICAL"
+          echo "Vulnerabilidad Alta: $HIGH"
+          echo "Vulnerabilidad Media: $MEDIUM"
           
-          if [ "$CRITICA" -gt 0 ] || [ "$ALTA" -gt 0 ] || [ "$MEDIA" -gt 0 ]; then
+          if [ "$CRITICA" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
             echo " Pipeline fallido: Errores Criticos, Altos, o Medios en la imagen de Docker"
             exit 1
           fi
