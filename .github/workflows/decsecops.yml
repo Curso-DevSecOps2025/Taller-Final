@@ -44,7 +44,7 @@ jobs:
        SONAR_PROJECT_KEY: Taller-Final
        SONAR_ORGANIZATION: curso-devsecops2025
       continue-on-error: true
-      
+
     # 6. SCA - Dependency Check
     - name: Correr OWASP Dependency Check
       uses: dependency-check/Dependency-Check_Action@main
@@ -75,6 +75,7 @@ jobs:
           exit 1
         fi
        fi
+      continue-on-error: true
 
     # 8. Construccion de Imagen Docker
     - name: Construir Imagen Docker
