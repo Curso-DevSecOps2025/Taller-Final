@@ -1,144 +1,160 @@
+
 name: DevSecOps Pipeline
 
 on:
   push:
-  branches: [ main, dev-br ]
+    branches: [ main, dev-br ]
   pull_request:
-  branches: [ main ]
+    branches: [ main ]    
 
 jobs:
   security-pipeline:
-  runs-on: ubuntu-latest
-  steps:
-  # 1. Clonacion del repositorio
-   - name: Checkout code
-     uses: actions/checkout@v4
-     with:
-     fetch-depth: 0
+    runs-on: ubuntu-latest   
+    
+    steps:
+      # 1. Clonación del repositorio
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  # 2. Configurar Node.js
-   - name: Configurar Node.js
-     uses: actions/setup-node@v4
-     with:
-      node-version: '18'
-      cache: 'npm'
+      # 2. Configurar Node.js
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
 
-  # 3. Instalar dependencies
-   - name: Instalar dependencias
-     run: npm install
+      # 3. Instalar dependencias
+      - name: Instalar dependencias
+        run: npm install
 
-  # 3.1 Crear directorio reports y archivos base
-   - name: Inicializar directorio reports
-     run: |
-      mkdir -p reports
-      echo "Los informes de seguridad se generarán aquí" > reports/README.md
-      echo '{"scan_date": "'$(date)'", "status": "initialized"}' > reports/scan-status.json
+      # 4. Crear directorio reports y archivos base
+      - name: Inicializar directorio reports
+        run: |
+          mkdir -p reports
+          echo "Los informes de seguridad se generarán aquí" > reports/README.md
+          echo '{"scan_date": "'$(date)'", "status": "initialized"}' > reports/scan-status.json
 
-  # 4. SAST SonarCloud Escaner
-   - name: Scaner SonarCloud
-     uses: SonarSource/sonarcloud-github-action@master
-     env:
-      GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
-      SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL}}
-      SONAR_PROJECT_KEY: Taller-Final
-      SONAR_ORGANIZATION: curso-devsecops2025
-      continue-on-error: true
+      # 5. SAST - SonarCloud Scanner
+      - name: Scanner SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.KEY_GIT_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
+          SONAR_PROJECT_KEY: Taller-Final
+          SONAR_ORGANIZATION: curso-devsecops2025
+        continue-on-error: true  # Excepción que continúa SonarCloud aunque falle
 
-  # 6. SCA - Dependency Check
-   - name: Correr OWASP Dependency Check
-     uses: dependency-check/Dependency-Check_Action@main
-     with:
-     project: 'curso-devsecops2025'
-     path: '.'
-     format: 'JSON'
-     args: >
-       --enableRetired
-       --enableExperimental
-       --failOnCVSS 4
-       --out reports
+      # 6. SCA - Dependency Check
+      - name: Correr OWASP Dependency Check
+        uses: dependency-check/Dependency-Check_Action@main
+        with:
+          project: 'curso-devsecops2025'
+          path: '.'
+          format: 'JSON'
+          args: >
+            --enableRetired
+            --enableExperimental
+            --failOnCVSS 4
+            --out reports
 
-  # 7. Chequear Vulnerabilidad Dependencia
-   - name: Chequea Vulnerabilidades de Dependencia
-     run: |
-      dependency-check.sh --failOnCVSS 7.0
-      if [ -f "reports/dependency-check-report.json" ]; then
-      CRITICAL=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "CRITICAL")] | length' reports/dependency-check-report.json)
-      HIGH=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "HIGH")] | length' reports/dependency-check-report.json)
-      MEDIUM=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "MEDIUM")] | length' reports/dependency-check-report.json)
+      # 7. Chequear Vulnerabilidades de Dependencias
+      - name: Chequear Vulnerabilidades de Dependencias
+        run: |
+          # Ejecutar dependency-check con umbral de falla
+          dependency-check.sh --failOnCVSS 7.0
+          
+          # Verificar si existe el reporte JSON
+          if [ -f "reports/dependency-check-report.json" ]; then
+            # Contar vulnerabilidades por severidad usando jq
+            CRITICAL=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "CRITICAL")] | length' reports/dependency-check-report.json)
+            HIGH=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "HIGH")] | length' reports/dependency-check-report.json)
+            MEDIUM=$(jq '[.dependencies[]?.vulnerabilities[]? | select(.severity == "MEDIUM")] | length' reports/dependency-check-report.json)
+            
+            echo "Vulnerabilidades Críticas: $CRITICAL"
+            echo "Vulnerabilidades Altas: $HIGH"
+            echo "Vulnerabilidades Medias: $MEDIUM"
+            
+            # Fallar el pipeline si hay vulnerabilidades
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
+              echo "Pipeline fallido: Vulnerabilidades Críticas, Altas, o Medias encontradas"
+              exit 1
+            fi
+          fi
 
-     echo "Vulnerabilidad Critica: $CRITICAL"
-     echo "Vulnerabilidad Alta: $HIGH"
-     echo "Vulnerabilidad Media: $MEDIUM"
+      # 8. Construcción de Imagen Docker
+      - name: Construir Imagen Docker
+        run: |
+          # Construir imagen con tag basado en el SHA del commit
+          docker build -t kuber-project:${{ github.sha }} .
+          # Crear tag 'latest' para facilitar referencias
+          docker tag kuber-project:${{ github.sha }} kuber-project:latest
 
-      if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
-     echo "Pipeline fallido: Vulnerabilidad Critica, Alta, o Media"
-      exit 1
-      fi
-      fi
+      # 9. Análisis de Seguridad de Imagen - Trivy Scanner
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'kuber-project:latest'
+          format: 'json'
+          output: 'trivy-results.json'
+          exit-code: '0'         # No fallar inmediatamente, procesaremos resultados
 
-# 8. Construccion de Imagen Docker
-   - name: Construir Imagen Docker
-     run: |
-      docker build -t kuber-project:${{ github.sha }} .
-      docker tag kuber-project:${{ github.sha }} kuber-project:latest
+      # 10. Chequear Vulnerabilidades en Imagen
+      - name: Chequear Seguridad de Imagen
+        run: |
+          if [ -f "trivy-results.json" ]; then
+            # Contar vulnerabilidades por severidad en la imagen
+            CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-results.json)
+            HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-results.json)
+            MEDIUM=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIUM")] | length' trivy-results.json)
+            
+            echo "Vulnerabilidades Críticas en Imagen: $CRITICAL"
+            echo "Vulnerabilidades Altas en Imagen: $HIGH"
+            echo "Vulnerabilidades Medias en Imagen: $MEDIUM"
+            
+            # Fallar si hay vulnerabilidades en la imagen
+            if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
+              echo "Pipeline fallido: Errores Críticos, Altos, o Medios en la imagen Docker"
+              exit 1
+            fi
+          fi
 
-# 9. Imagen Seguridad - Scan Trivy
-   - name: Run Trivy vulnerability scanner
-     uses: aquasecurity/trivy-action@master
-     with:
-     image-ref: 'kuber-project:latest'
-     format: 'json'
-     output: 'trivy-results.json'
-     exit-code: '0'
+      # 11. Despliegue de la aplicación (Docker local)
+      - name: Deployar Aplicación
+        run: |
+          echo "Desplegando aplicación..."
+          # Ejecutar contenedor en modo daemon
+          docker run -d -p 3000:3000 --name movies-app kuber-project:latest
+          # Esperar que la aplicación inicie
+          sleep 10
+          # Verificar que la aplicación responde
+          curl -f http://localhost:3000 || exit 1
 
-# 10. Chequear Imagen Vulnerabilidad
-   - name: Chequear Imagen Seguridad
-     run: |
-      if [ -f "trivy-results.json" ]; then
-        CRITICAL=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "CRITICAL")] | length' trivy-results.json)
-        HIGH=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "HIGH")] | length' trivy-results.json)
-        MEDIUM=$(jq '[.Results[]?.Vulnerabilities[]? | select(.Severity == "MEDIUM")] | length' trivy-results.json)
+      # 12. DAST - OWASP ZAP Análisis
+      - name: ZAP OWASP Análisis
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
 
-     echo "Vulnerabilidad Critica: $CRITICAL"
-     echo "Vulnerabilidad Alta: $HIGH"
-     echo "Vulnerabilidad Media: $MEDIUM"
+      # 13. Subir reportes como artefactos
+      - name: Subir Reportes de Seguridad
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: security-reports
+          path: |
+            reports/
+            trivy-results.json
+            report_html.html
+            report_json.json
 
-      if [ "$CRITICAL" -gt 0 ] || [ "$HIGH" -gt 0 ] || [ "$MEDIUM" -gt 0 ]; then
-     echo "Pipeline fallido: Errores Criticos, Altos, o Medios en la imagen de Docker"
-        exit 1
-      fi
-      fi
-
-# 11. Despliegue de la aplicación (Docker local)
-   - name: Deployar Aplicacion
-     run: |
-      echo "Deployando aplicacion..."
-         docker run -d -p 3000:3000 --name movies-app movies-app:latest
-      sleep 10
-      curl -f http://localhost:3000 || exit 1
-
-# 12. DAST - OWASP ZAP Analisis
-   - name: Zap Owasp Analisis
-     uses: zaproxy/action-baseline@v0.10.0
-     with:
-     target: 'http://localhost:3000'
-     rules_file_name: '.zap/rules.tsv'
-     cmd_options: '-a'
-
-# 13. Carga reporte como artifacto
-   - name: Carga Reporte Seguridad
-     uses: actions/upload-artifact@v4
-     if: always()
-     with:
-      name: security-reports
-      path: |
-        reports/
-        trivy-results.json
-        report_html.html
-        report_json.json
-
-# 14. Cleanups
-   - name: Cleanups
-     if: always()
-     run: |
-      docker rm -f kuber-project 2>/dev/null || echo "Contenedor kuber-project no existe o ya fue eliminado"
+      # 14. Limpieza de recursos
+      - name: Cleanup
+        if: always()
+        run: |
+          # Detener y eliminar contenedor si existe
+          docker stop movies-app || true
+          docker rm movies-app || true
