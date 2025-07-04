@@ -156,5 +156,5 @@ jobs:
         if: always()
         run: |
           # Detener y eliminar contenedor si existe
-          docker stop movies-app || true
-          docker rm movies-app || true
+          docker stop kuber-project || true
+          docker rm kuber-project || true
