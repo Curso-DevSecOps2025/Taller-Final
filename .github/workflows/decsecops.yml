@@ -44,7 +44,7 @@ jobs:
           SONAR_TOKEN: ${{ secrets.TOKEN_SONAR_TALLERFINAL }}
           SONAR_PROJECT_KEY: Taller-Final
           SONAR_ORGANIZATION: curso-devsecops2025
-        continue-on-error: true  # Excepción que continúa SonarCloud aunque falle
+        #continue-on-error: true  # Excepción que continúa SonarCloud aunque falle
 
       # 6. SCA - Dependency Check
       - name: Correr OWASP Dependency Check
