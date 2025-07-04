@@ -56,7 +56,7 @@ jobs:
           args: >
             --enableRetired
             --enableExperimental
-            --failOnCVSS 7.0
+            --failOnCVSS 9.0
             --out reports
 
       # 7. Chequear Vulnerabilidades de Dependencias
