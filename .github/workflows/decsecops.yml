@@ -94,14 +94,14 @@ jobs:
     # 8. Construccion de Imagen Docker
     - name: Construir Imagen Docker
       run: |
-       docker build -t movies-app:${{ github.sha }} .
-       docker tag movies-app:${{ github.sha }} movies-app:latest
+       docker build -t kuber-project:${{ github.sha }} .
+       docker tag kuber-project:${{ github.sha }} kuber-project:latest
 
     # 9. Imagen Seguridad - Scan Trivy
     - name: Run Trivy vulnerability scanner
       uses: aquasecurity/trivy-action@master
       with:
-        image-ref: 'movies-app:latest'
+        image-ref: 'kuber-project:latest'
         format: 'json'
         output: 'trivy-results.json'
         exit-code: '0'
@@ -156,5 +156,5 @@ jobs:
     - name: Cleanup
       if: always()
       run: |
-        docker stop movies-app || true
-        docker rm movies-app || true
+        docker stop kuber-project || true
+        docker rm kuber-project || true
